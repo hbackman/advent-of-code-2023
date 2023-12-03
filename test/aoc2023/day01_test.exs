@@ -3,7 +3,7 @@ defmodule Aoc2023.Day01Test do
 
   alias Aoc2023.Day01
 
-  @input [:code.priv_dir(:aoc2023), "day01.txt"]
+  @input [:code.priv_dir(:aoc2023), "2023", "day01.txt"]
     |> Path.join()
     |> File.read!()
 
