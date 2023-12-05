@@ -44,4 +44,20 @@ defmodule Aoc2023.Day03 do
       |> Enum.sum()
   end
 
+  defp find_gears({input, width, parts}) do
+    parts = Enum.filter(parts, fn {offset, length, _number} ->
+      Enum.to_list((offset-1-width)..(offset+length-width)) ++
+      Enum.to_list((offset-1+width)..(offset+length+width)) ++
+      [offset-1, offset+length]
+        |> Enum.map(&String.slice(input, &1, 1))
+        |> Enum.any?(&(&1 == "*"))
+    end)
+  end
+
+  def part_two(input) do
+    input
+      |> format()
+      |> find_gears()
+  end
+
 end

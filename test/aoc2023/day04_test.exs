@@ -8,11 +8,11 @@ defmodule Aoc2023.Day04Test do
     |> File.read!()
 
   describe "part one" do
-    IO.inspect Day04.part_one(@input)
+    assert Day04.part_one(@input) == 25651
   end
 
   describe "part two" do
-    #
+    assert Day04.part_two(@input) == 19499881
   end
 
 end
