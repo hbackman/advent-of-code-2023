@@ -40,9 +40,7 @@ defmodule Aoc2023.Day04 do
       0 -> 1
       n -> index+1..index+n
         |> Enum.to_list()
-        |> Enum.reduce(1, fn i, total ->
-          total + play(cards, i)
-        end)
+        |> Enum.reduce(1, fn i, total -> total + play(cards, i) end)
     end
   end
 
