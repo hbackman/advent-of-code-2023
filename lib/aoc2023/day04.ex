@@ -35,7 +35,7 @@ defmodule Aoc2023.Day04 do
       |> Enum.sum()
   end
 
-  defp play(cards, index \\ 0) do
+  defp play(cards, index) do
     case winners(Enum.at(cards, index)) do
       0 -> 1
       n -> index+1..index+n
