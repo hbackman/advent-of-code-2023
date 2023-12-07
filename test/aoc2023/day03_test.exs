@@ -11,4 +11,8 @@ defmodule Aoc2023.Day03Test do
     assert Day03.part_one(@input) == 557705
   end
 
+  describe "part two" do
+    assert Day03.part_two(@input) == 84266818
+  end
+
 end
