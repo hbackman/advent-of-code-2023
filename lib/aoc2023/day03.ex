@@ -14,16 +14,17 @@ defmodule Aoc2023.Day03 do
     input = Regex.replace(~r/\R/, input, "")
     match = Regex.scan(~r/\d+/, input, return: :index)
       |> Enum.map(&hd/1)
-      |> Enum.map(fn {offset, length} -> {
-        offset,
-        length,
-        input
-          |> String.slice(offset, length)
-          |> String.to_integer()
-        }
+      |> Enum.map(fn {offset, length} ->
+        {offset, length, slice_int(input, offset, length)}
       end)
 
     {input, width, match}
+  end
+
+  defp slice_int(string, offset, length) do
+    string
+      |> String.slice(offset, length)
+      |> String.to_integer()
   end
 
   defp neighbors(offset, length, width) do
