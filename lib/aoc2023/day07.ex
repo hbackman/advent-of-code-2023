@@ -15,8 +15,20 @@ defmodule Aoc2023.Day07 do
   defp parse_types(hands, parsed \\ [])
   defp parse_types([{hand, bid} | hands], parsed) do
     uniq = unique_cards(hand)
+      |> Enum.map(& elem(&1, 1))
 
-    type_score = cond do
+    type_sort = calc_type_sort(uniq)
+    hand_sort = calc_hand_sort(hand, @cards_a)
+
+    parse_types(hands, [{hand, bid, type_sort, hand_sort} | parsed])
+  end
+
+  defp parse_types([], parsed),
+    do: parsed
+
+  # Caclulates a numeric sort value for the hand type.
+  defp calc_type_sort(uniq) do
+    cond do
       at(uniq, 0) == 5 ->
         7 # :five_of_a_kind
 
@@ -40,19 +52,16 @@ defmodule Aoc2023.Day07 do
 
       true -> 0
     end
-
-    hand_score = hand
-      |> Enum.map(&card_to_sort/1)
-      |> Enum.join()
-
-    parse_types(hands, [{hand, bid, type_score, hand_score} | parsed])
   end
 
-  defp parse_types([], parsed),
-    do: parsed
-
-  defp card_to_sort(card),
-    do: List.to_string([?a + Enum.find_index(@cards_a, & &1 == card)])
+  # Calculates a numeric sort value for the hand score.
+  defp calc_hand_sort(hand, dictionary) do
+    hand
+      |> Enum.map(fn c ->
+        List.to_string([?a + Enum.find_index(dictionary, & &1 == c)])
+      end)
+      |> Enum.join()
+  end
 
   defp at(enum, index),
     do: Enum.at(enum, index)
@@ -60,35 +69,30 @@ defmodule Aoc2023.Day07 do
   defp unique_cards(hand) do
     hand
       |> Enum.group_by(& &1)
-      |> Map.values()
-      |> Enum.map(& length(&1))
-      |> Enum.sort()
-      |> Enum.reverse()
+      |> Enum.map(& {elem(&1, 0), length(elem(&1, 1))})
+      |> Enum.sort_by(& elem(&1, 1), :desc)
   end
 
-  def part_one(input) do
-    input
-      |> format()
-      |> parse_types()
+  defp solve_winnings(hands) do
+    hands
       |> Enum.sort_by(& {elem(&1, 2), elem(&1, 3)})
       |> Enum.with_index()
       |> Enum.map(fn {{_, bid, _, _}, index} -> bid * (index + 1) end)
       |> Enum.sum()
   end
 
-  defp unique_cards_2(hand) do
-    hand
-      |> Enum.group_by(& &1)
-      |> Enum.map(& {elem(&1, 0), length(elem(&1, 1))})
-      |> Enum.sort_by(& elem(&1, 1), :desc)
+  def part_one(input) do
+    input
+      |> format()
+      |> parse_types()
+      |> solve_winnings()
   end
 
   defp handle_joker(hand) do
     if Enum.member?(hand, "J") do
-      {max, _} = unique_cards_2(hand)
-        |> Enum.reject(& elem(&1, 0) == "J")
+      {max, _} = unique_cards(hand)
+        |> Enum.reject(& elem(&1, 0) == "J" and elem(&1, 1) < 5)
         |> List.first()
-        || {"J", 5}
 
       Enum.map(hand, fn
         "J" -> max
@@ -101,44 +105,15 @@ defmodule Aoc2023.Day07 do
 
   defp parse_types_2(hands, parsed \\ [])
   defp parse_types_2([{hand, bid} | hands], parsed) do
-
-    hand_sort = hand
-      |> Enum.map(fn c ->
-        List.to_string([?a + Enum.find_index(@cards_b, & &1 == c)])
-      end)
-      |> Enum.join()
-
     uniq = hand
       |> handle_joker()
-      |> unique_cards_2()
+      |> unique_cards()
       |> Enum.map(& elem(&1, 1))
 
-    type_score = cond do
-      at(uniq, 0) == 5 ->
-        7 # :five_of_a_kind
+    type_sort = calc_type_sort(uniq)
+    hand_sort = calc_hand_sort(hand, @cards_b)
 
-      at(uniq, 0) == 4 ->
-        6 # :four_of_a_kind
-
-      at(uniq, 0) == 3 and at(uniq, 1) == 2 ->
-        5 # :full_house
-
-      at(uniq, 0) == 3 and length(uniq) > 2 ->
-        4 # :three_of_a_kind
-
-      at(uniq, 0) == 2 and at(uniq, 1) == 2 ->
-        3 # :two_pair
-
-      at(uniq, 0) == 2 and length(uniq) == 4 ->
-        2 # :one_pair
-
-      length(uniq) == 5 ->
-        1 # :high_card
-
-      true -> 0
-    end
-
-    parse_types_2(hands, [{hand, bid, type_score, hand_sort} | parsed])
+    parse_types_2(hands, [{hand, bid, type_sort, hand_sort} | parsed])
   end
 
   defp parse_types_2([], parsed),
@@ -148,10 +123,7 @@ defmodule Aoc2023.Day07 do
     input
       |> format()
       |> parse_types_2()
-      |> Enum.sort_by(& {elem(&1, 2), elem(&1, 3)})
-      |> Enum.with_index()
-      |> Enum.map(fn {{_, bid, _, _}, index} -> bid * (index + 1) end)
-      |> Enum.sum()
+      |> solve_winnings()
   end
 
 end
