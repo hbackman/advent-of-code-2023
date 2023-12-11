@@ -11,7 +11,12 @@ defmodule Aoc2023.Day08 do
   end
 
   defp parse_nodes(string) do
-    [f, l, r] = Regex.run(~r/(\w+)\ =\ \((\w+),\ (\w+)\)/, string, capture: :all_but_first)
+    <<
+      f::binary-size(3), " = (",
+      l::binary-size(3), ", ",
+      r::binary-size(3), ")"
+    >> = string
+
     {f, {l, r}}
   end
 
