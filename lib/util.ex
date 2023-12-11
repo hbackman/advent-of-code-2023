@@ -42,4 +42,17 @@ defmodule Util do
   def map_every_2(enum, fun),
     do: map_every_2(enum, fun, false)
 
+  @doc """
+  Calculate the greatest common divisor of two given number.
+  """
+  def gcd(a, 0), do: a
+	def gcd(0, b), do: b
+	def gcd(a, b), do: gcd(b, rem(a, b))
+
+  @doc """
+  Calculate the lowest common multiple of two given numbers.
+  """
+	def lcm(0, 0), do: 0
+	def lcm(a, b), do: (a * b) / gcd(a, b)
+
 end

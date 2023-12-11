@@ -3,11 +3,11 @@ defmodule Aoc2023.Day08 do
   defp parse(input) do
     [path | rest] = String.split(input, ~r/\R/, trim: true)
 
-    nodes = rest
+    map = rest
       |> Enum.map(&parse_nodes/1)
       |> Map.new()
 
-    {path, nodes}
+    {path, map}
   end
 
   defp parse_nodes(string) do
@@ -19,24 +19,36 @@ defmodule Aoc2023.Day08 do
     String.at(inst, rem(step, String.length(inst)))
   end
 
-  defp traverse(_, pos, step \\ 0)
-  defp traverse(_, "ZZZ", step) do
-    step
-  end
-
-  defp traverse({inst, maps}, pos, step) do
-    next = case next(inst, step) do
-      "L" -> elem(maps[pos], 0)
-      "R" -> elem(maps[pos], 1)
+  defp traverse({inst, map}, pos, n, ends_with) do
+    next = case next(inst, n) do
+      "L" -> elem(map[pos], 0)
+      "R" -> elem(map[pos], 1)
     end
 
-    traverse({inst, maps}, next, step + 1)
+    if ! String.ends_with?(next, ends_with) do
+      traverse({inst, map}, next, n + 1, ends_with)
+    else
+      n + 1
+    end
   end
 
   def part_one(input) do
     input
-      |> parse
-      |> traverse("AAA")
+      |> parse()
+      |> traverse("AAA", 0, "ZZZ")
+  end
+
+  def part_two(input) do
+    {inst, map} = input
+      |> parse()
+
+    map
+      |> Map.keys()
+      |> Enum.filter(&String.ends_with?(&1, "A"))
+      |> Enum.map(&traverse({inst, map}, &1, 0, "Z"))
+      |> Enum.reduce(1, fn e, c ->
+        trunc(Util.lcm(e, c))
+      end)
   end
 
 end
