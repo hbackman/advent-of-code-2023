@@ -34,30 +34,21 @@ defmodule Aoc2023.Day09 do
       |> Enum.sum()
   end
 
-  defp find_previous(sequences) do
-    {res, _} = Enum.map_reduce(sequences, nil, fn
-      a, nil -> {a ++ [0], a ++ [0]}
-      a, acc ->
-        seq_a = List.first(acc)
-        seq_b = List.first(a)
-
-        a = [seq_b - seq_a | a]
-
-        {a, a}
-    end)
-    res
+  defp extrapolate_left(sequence) do
+    sequence
+      |> deltas()
+      |> Enum.map(&List.first/1)
+      |> List.foldl({0, []}, fn a, {b, acc} ->
+        {a-b, [a-b | acc]}
+      end)
+      |> elem(1)
+      |> List.first()
   end
 
   def part_two(input) do
     input
       |> format()
-      |> Enum.map(fn sequence ->
-        sequence
-          |> deltas()
-          |> find_previous()
-          |> List.last()
-          |> List.first()
-      end)
+      |> Enum.map(&extrapolate_left/1)
       |> Enum.sum()
   end
 
