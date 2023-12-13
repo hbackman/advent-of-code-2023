@@ -22,15 +22,17 @@ defmodule Aoc2023.Day09 do
     end
   end
 
+  defp extrapolate_right(sequence) do
+    sequence
+      |> deltas()
+      |> Enum.map(&List.last/1)
+      |> Enum.sum()
+  end
+
   def part_one(input) do
     input
       |> format()
-      |> Enum.map(fn seq ->
-        seq
-          |> deltas()
-          |> Enum.map(&List.last/1)
-          |> Enum.sum()
-      end)
+      |> Enum.map(&extrapolate_right/1)
       |> Enum.sum()
   end
 
