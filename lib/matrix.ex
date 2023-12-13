@@ -26,6 +26,13 @@ defmodule Matrix do
     }
   end
 
+  def from(list) when is_bitstring(list) do
+    list
+      |> String.split(~r/\R/, trim: true)
+      |> Enum.map(&String.split(&1, "", trim: true))
+      |> from()
+  end
+
   defp list_to_matrix(list) when is_list(list) do
     {map, _} = Enum.reduce(list, {%{}, 0}, fn i, {map, index} ->
       {put_in(map[index], list_to_matrix(i)), index + 1}
@@ -34,13 +41,6 @@ defmodule Matrix do
   end
 
   defp list_to_matrix(list), do: list
-
-  def from(list) when is_bitstring(list) do
-    list
-      |> String.split(~r/\R/, trim: true)
-      |> Enum.map(&String.split(&1, "", trim: true))
-      |> from()
-  end
 
   @doc """
   Convert a matrix into a 2d list.
