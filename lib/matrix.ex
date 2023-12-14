@@ -10,9 +10,9 @@ defmodule Matrix do
 
   def make(width, height, default \\ nil) do
     from(
-      for _ <- 1..width do
-        for _ <- 1..height do
-          default
+      for _ <- 1..height do
+        for _ <- 1..width do
+            default
         end
       end
     )

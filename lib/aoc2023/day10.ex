@@ -46,19 +46,51 @@ defmodule Aoc2023.Day10 do
     Enum.member?(connections(map, other), {x, y})
   end
 
-  def part_one(input) do
+  defp discover_loop(map) do
     g = :digraph.new()
 
-    m = Matrix.from(input)
-    m |> get_edges() |> Enum.each(fn {p1, p2} ->
+    map |> get_edges() |> Enum.each(fn {p1, p2} ->
       :digraph.add_vertex(g, p1)
       :digraph.add_vertex(g, p2)
       :digraph.add_edge(g, p1, p2)
     end)
 
-    cycle = :digraph.get_cycle(g, get_start(m))
+    cycle = :digraph.get_cycle(g, get_start(map))
 
-    floor(Enum.count(cycle) / 2)
+    :digraph.delete(g)
+
+    cycle
+  end
+
+  def part_one(input) do
+    m = Matrix.from(input)
+    l = discover_loop(m)
+
+    floor(Enum.count(l) / 2)
+  end
+
+  defp calculate_area(loop) do
+    loop = Enum.uniq(loop)
+    last = List.last(loop)
+
+    area = Enum.reduce(loop, {last, 0}, fn {x0, y0}, {{x1, y1}, acc} ->
+      {{x0, y0}, acc + (y1 * x0 - x1 * y0)}
+    end) |> elem(1)
+
+    # Shoelace formula
+    # A = 1/2 * sum(xi * yi+1 - yi * xi+1)
+
+    # Pick's theorem
+    # i = A - points/2 + 1
+
+    trunc(abs(area/2) - length(loop)/2 + 1)
+  end
+
+  def part_two(input) do
+    input
+      |> Matrix.from()
+      |> discover_loop()
+      |> calculate_area()
   end
 
 end

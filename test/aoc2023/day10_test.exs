@@ -12,7 +12,7 @@ defmodule Aoc2023.Day10Test do
   end
 
   describe "part two" do
-    #
+    assert Day10.part_two(@input) == 467
   end
 
 end
