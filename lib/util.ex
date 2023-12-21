@@ -71,4 +71,14 @@ defmodule Util do
 	def lcm(0, 0), do: 0
 	def lcm(a, b), do: (a * b) / gcd(a, b)
 
+  @doc """
+  Generate combinations.
+  """
+  def comb(_, 0), do: [[]]
+  def comb([], _), do: []
+
+  def comb([h | t], m) do
+    (for l <- comb(t, m-1), do: [h|l]) ++ comb(t, m)
+  end
+
 end
