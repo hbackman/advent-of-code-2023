@@ -9,84 +9,51 @@ defmodule Aoc2023.Day12 do
       end)
   end
 
-  # Solution found.
   defp aux("", _, _, [], memo),
     do: {1, memo}
 
-  # Solution found.
   defp aux("", _, _, [0], memo),
     do: {1, memo}
 
-  # Solution impossible.
   defp aux("", _, _, _, memo),
     do: {0, memo}
 
-  # Solution impossible.
   defp aux("#" <> _, _, _, [], memo),
     do: {0, memo}
 
-  # Solution impossible.
   defp aux("#" <> _, _, _, [0 | _], memo),
     do: {0, memo}
 
-  # When the current spring is broken, and the current counter is not
-  # zero, decrement the counter and keep looking.
   defp aux("#" <> rest, i, _, [h | t], memo),
     do: aux(rest, i + 1, "#", [h-1 | t], memo)
 
-  # When the current spring is good, and there's no counter left, try
-  # rest of the line and see if all the springs left are good.
   defp aux("." <> rest, i, _, [], memo),
     do: aux(rest, i + 1, ".", [], memo)
 
-  # When the current spring is good, and the previous spring is bad, and
-  # the current counter reaches zero, we can discard that zero and continue.
   defp aux("." <> rest, i, "#", [0 | t], memo),
     do: aux(rest, i + 1, ".", t, memo)
 
-  # When the current spring is good, and the previous spring is bad, and
-  # the current counter is not zero, that's invalid.
   defp aux("." <> _, _, "#", [_ | _], memo),
     do: {0, memo}
 
-  # When the current spring is good, and the previous spring is also
-  # good, and the current counter is not zero, continue.
   defp aux("." <> rest, i, ".", counters, memo),
     do: aux(rest, i + 1, ".", counters, memo)
 
-  # When the current spring is unknown, and the previous spring is broken,
-  # and there's no counter left, then the current spring has to be good,
-  # continue.
   defp aux("?" <> rest, i, "#", [], memo),
     do: aux(rest, i + 1, ".", [], memo)
 
-  # When the current spring is unknown, and the previous spring is broken,
-  # and the current counter reaches zero, then the current spring has to
-  # good, continue, discard counter.
   defp aux("?" <> rest, i, "#", [0 | t], memo),
     do: aux(rest, i + 1, ".", t, memo)
 
-  # When the current spring is unknown, and the previous spring is bad,
-  # and the current counter is not zero, then the current spring has to
-  # be broken, continue, decrement.
   defp aux("?" <> rest, i, "#", [h | t], memo),
     do: aux(rest, i + 1, "#", [h-1 | t], memo)
 
-  # When the current spring is unknown, and the previous spring is good,
-  # and there's no counter left, then the current spring has to be good,
-  # continue.
   defp aux("?" <> rest, i, ".", [], memo),
     do: aux(rest, i + 1, ".", [], memo)
 
-  # When the current spring is unknown, and the previous spring is good,
-  # and the current counter reaches zero, then the current spring must be
-  # good, continue, discard counter.
   defp aux("?" <> rest, i, ".", [0 | t], memo),
     do: aux(rest, i + 1, ".", t, memo)
 
-  # When the current spring is unknown, and the previous spring is good,
-  # and the current counter is not zero, then the current spring can be
-  # good or bad, try both.
   defp aux("?" <> rest, i, ".", [h | t], memo) do
     memoized(memo, {i, [h | t]}, fn ->
       {a, memo} = aux(rest, i + 1, "#", [h-1 | t], memo)
