@@ -6,59 +6,63 @@ defmodule Aoc2023.Day13 do
       |> Enum.map(&Matrix.from/1)
   end
 
-  defp solve(map = %Matrix{}) do
-    x_range = 0..map.w
-    y_range = 0..map.h
+  defp find_reflections(map = %Matrix{}, smudges \\ 0) do
+    num_x = find_reflected_rows(map, smudges)
+    num_y = find_reflected_rows(map |> Matrix.transpose(), smudges)
 
-    x = Enum.find(x_range, fn x ->
-      Enum.all?(y_range, fn y ->
-        l = get_range(map, :y, y, 0..x)
-        r = get_range(map, :y, y, (x+1)..(map.w-1))
-
-        mirrored?(Enum.reverse(l), r)
-      end)
-    end)
-
-    y = Enum.find(y_range, fn y ->
-      Enum.all?(x_range, fn x ->
-        l = get_range(map, :x, x, 0..y)
-        r = get_range(map, :x, x, (y+1)..(map.h-1))
-
-        mirrored?(Enum.reverse(l), r)
-      end)
-    end)
-
-    cond do
-      x    -> {:x, x + 1}
-      y    -> {:y, y + 1}
-      true -> nil
-    end
+    [{:x, num_x}, {:y, num_y}]
   end
 
-  defp get_range(map, :x, x, range),
-    do: Enum.map(range, &Matrix.get(map, {x, &1}))
+  defp find_reflected_rows(map = %Matrix{}, smudges) do
+    Enum.find(0..map.w, fn x ->
+      diffs = Enum.map(0..map.h, fn y ->
+        l = get_range(map, y, 0..x)
+        r = get_range(map, y, (x+1)..(map.w-1))
 
-  defp get_range(map, :y, y, range),
-    do: Enum.map(range, &Matrix.get(map, {&1, y}))
+        diff(Enum.reverse(l), r)
+      end)
 
-  defp mirrored?([l | ll], [r | rr]) do
-    if l != r,
-      do: false,
-    else: mirrored?(ll, rr)
+      Enum.sum(diffs) == smudges
+    end)
   end
 
-  defp mirrored?([], _), do: true
-  defp mirrored?(_, []), do: true
-
-  def part_one(input) do
-    input
-      |> format()
-      |> Enum.map(&solve/1)
+  defp calc_scores(reflections) do
+    reflections
       |> Enum.map(fn
-        {:x, x} -> x
-        {:y, y} -> y * 100
+        {_, nil} -> 0
+        {:x,  x} -> (x + 1)
+        {:y,  y} -> (y + 1) * 100
       end)
       |> Enum.sum()
   end
 
+  defp diff(left, right, diff \\ 0)
+
+  defp diff([l | ll], [r | rr], diff) do
+    if l != r,
+      do: diff(ll, rr, diff + 1),
+    else: diff(ll, rr, diff)
+  end
+
+  defp diff([], _, diff), do: diff
+  defp diff(_, [], diff), do: diff
+
+  defp get_range(map, y, range),
+    do: Enum.map(range, &Matrix.get(map, {&1, y}))
+
+  def part_one(input) do
+    input
+      |> format()
+      |> Enum.map(&find_reflections/1)
+      |> Enum.map(&calc_scores/1)
+      |> Enum.sum()
+  end
+
+  def part_two(input) do
+    input
+      |> format()
+      |> Enum.map(&find_reflections(&1, 1))
+      |> Enum.map(&calc_scores/1)
+      |> Enum.sum()
+  end
 end
