@@ -10,9 +10,9 @@ defmodule Aoc2023.Day14 do
           x <- Matrix.x_range(matrix),
       do: {x, y}
 
-    Enum.filter(positions, fn {x, y} ->
-      Matrix.get(matrix, {x, y}) == "O"
-    end)
+    positions
+      |> Enum.sort(& elem(&2, 1) > elem(&1, 1))
+      |> Enum.filter(& Matrix.get(matrix, &1) == "O")
   end
 
   defp tilt(matrix = %Matrix{}, direction) do
@@ -38,8 +38,8 @@ defmodule Aoc2023.Day14 do
   defp calc_load(matrix = %Matrix{}) do
     rocks = find_rocks(matrix)
 
-    Enum.reduce(rocks, 0, fn {x, y}, acc ->
-      acc + (matrix.h - y) - y + 1
+    Enum.reduce(rocks, 0, fn {_, y}, acc ->
+      acc + (matrix.h - y)
     end)
   end
 
@@ -59,7 +59,7 @@ defmodule Aoc2023.Day14 do
     input
       |> format()
       |> tilt(:north)
-      |> print()
+      #|> print()
       |> calc_load()
   end
 
