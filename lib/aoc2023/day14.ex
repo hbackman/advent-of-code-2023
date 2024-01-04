@@ -10,28 +10,40 @@ defmodule Aoc2023.Day14 do
           x <- Matrix.x_range(matrix),
       do: {x, y}
 
-    positions
-      |> Enum.sort(& elem(&2, 1) > elem(&1, 1))
-      |> Enum.filter(& Matrix.get(matrix, &1) == "O")
+    Enum.filter(positions, & Matrix.get(matrix, &1) == "O")
   end
 
   defp tilt(matrix = %Matrix{}, direction) do
-    rocks = find_rocks(matrix)
-
-    Enum.reduce(rocks, matrix, fn {x, y}, mat ->
-      fall(mat, {x, y}, direction)
-    end)
+    find_rocks(matrix)
+      |> Enum.sort(fn {x1, y1}, {x2, y2} ->
+        case direction do
+          :north -> y2 > y1
+          :south -> y2 < y2
+          :east  -> x2 < x1
+          :west  -> x2 > x1
+        end
+      end)
+      |> Enum.reduce(matrix, fn {x, y}, mat ->
+        fall(mat, {x, y}, direction)
+      end)
   end
 
-  defp fall(matrix = %Matrix{}, {x, y}, :north) do
-    case Matrix.get(matrix, {x, y - 1}) do
+  defp fall(matrix = %Matrix{}, curr = {x, y}, direction) do
+    next = case direction do
+      :north -> {x, y-1}
+      :south -> {x, y+1}
+      :east  -> {x+1, y}
+      :west  -> {x-1, y}
+    end
+
+    case Matrix.get(matrix, next) do
       nil -> matrix
       "O" -> matrix
       "#" -> matrix
       "." -> matrix
-        |> Matrix.put({x, y-0}, ".")
-        |> Matrix.put({x, y-1}, "O")
-        |> fall({x, y-1}, :north)
+        |> Matrix.put(curr, ".")
+        |> Matrix.put(next, "O")
+        |> fall(next, direction)
     end
   end
 
@@ -43,23 +55,44 @@ defmodule Aoc2023.Day14 do
     end)
   end
 
-  defp print(matrix = %Matrix{}) do
-    IO.puts matrix.data
-      |> Enum.map(fn {_, row} ->
-        row
-          |> Map.to_list()
-          |> Enum.map(&elem(&1, 1))
-          |> Enum.join()
-      end)
-      |> Enum.join("\n")
-    matrix
-  end
-
   def part_one(input) do
     input
       |> format()
       |> tilt(:north)
-      #|> print()
+      |> calc_load()
+  end
+
+  defp spin(mat = %Matrix{}, n),
+    do: spin(mat, n, %{})
+
+  defp spin(mat = %Matrix{}, 0, _seen),
+    do: mat
+
+  defp spin(mat = %Matrix{}, n, seen) do
+    mat = mat
+      |> tilt(:north)
+      |> tilt(:west)
+      |> tilt(:south)
+      |> tilt(:east)
+
+    key = :erlang.term_to_binary(mat.data)
+
+    if Map.has_key?(seen, key) do
+      n2 = Map.get(seen, key)
+      nd = n2 - n
+
+      r = rem(n, nd)
+
+      spin(mat, r - 1, %{})
+    else
+      spin(mat, n - 1, Map.put(seen, key, n))
+    end
+  end
+
+  def part_two(input) do
+    input
+      |> format()
+      |> spin(1_000_000_000)
       |> calc_load()
   end
 
